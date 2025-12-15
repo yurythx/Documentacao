@@ -10,7 +10,7 @@ services:
         max-size: "10m"
         max-file: "3"
     env_file:
-      - .env
+      - ../.env
     environment:
       - POSTGRES_USER=${ZABBIX_POSTGRES_USER}
       - POSTGRES_PASSWORD=${ZABBIX_POSTGRES_PASSWORD}
@@ -48,7 +48,7 @@ services:
       POSTGRES_DB: ${ZABBIX_POSTGRES_DB}
       TZ: America/Sao_Paulo
     env_file:
-      - .env
+      - ../.env
     networks:
       - stack_network
     deploy:
@@ -90,7 +90,7 @@ services:
       POSTGRES_DB: ${ZABBIX_POSTGRES_DB}
       TZ: America/Sao_Paulo
     env_file:
-      - .env
+      - ../.env
     networks:
       - stack_network
     deploy:

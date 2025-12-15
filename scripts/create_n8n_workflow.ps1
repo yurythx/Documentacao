@@ -1,30 +1,36 @@
+param(
+  [string]$Name = "Evolution Webhook",
+  [string]$Path = "evolution"
+)
+
 $basicAuth = "admin:password"
 $encodedAuth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($basicAuth))
 $headers = @{ "Authorization" = "Basic $encodedAuth"; "Content-Type" = "application/json" }
 
-$workflowBody = '{
-  "name": "Evolution Webhook",
-  "active": true,
-  "nodes": [
-    {
-      "parameters": {
-        "path": "evolution",
-        "methods": ["POST"],
-        "responseMode": "onReceived",
-        "options": {}
-      },
-      "id": "Webhook1",
-      "name": "Webhook",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
-      "position": [300, 300]
+$workflowObj = [ordered]@{
+  name = $Name
+  active = $true
+  nodes = @(
+    [ordered]@{
+      parameters = [ordered]@{
+        path = $Path
+        methods = @("POST")
+        responseMode = "onReceived"
+        options = @{}
+      }
+      id = "Webhook_" + ($Path -replace '[^a-zA-Z0-9]', '')
+      name = "Webhook"
+      type = "n8n-nodes-base.webhook"
+      typeVersion = 1
+      position = @(300,300)
     }
-  ],
-  "connections": {}
-}'
+  )
+  connections = @{}
+}
+$workflowBody = ($workflowObj | ConvertTo-Json -Depth 6)
 
 try {
-  Write-Host "Criando workflow no n8n..."
+  Write-Host "Criando workflow no n8n (Nome: $Name, Path: $Path)..."
   $resp = Invoke-RestMethod -Uri "http://192.168.29.71:5678/rest/workflows" -Method Post -Headers $headers -Body $workflowBody
   Write-Host "Workflow criado com sucesso!"
   $resp | ConvertTo-Json -Depth 6 | Write-Output
@@ -39,4 +45,3 @@ try {
     }
   }
 }
-

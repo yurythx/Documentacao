@@ -10,7 +10,7 @@ services:
         max-size: "10m"
         max-file: "3"
     env_file:
-      - .env
+      - ../.env
     volumes:
       - glpi_db_data:/var/lib/mysql
     networks:
