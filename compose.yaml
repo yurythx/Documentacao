@@ -1,0 +1,13 @@
+name: glpi-evolution-zabbix
+
+include:
+  - Chatwoot/compose.yaml
+  - GLPI/glpi.yml
+  - Zabbix/zabbix.yml
+  - evolution/compose.yaml
+  - minio/compose.yaml
+  - n8n/compose.yaml
+
+networks:
+  stack_network:
+    external: true

@@ -1,0 +1,70 @@
+services:
+  # 1. Banco de Dados para o GLPI
+  glpi-db:
+    image: mariadb:10.11
+    container_name: glpi-db
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - .env
+    volumes:
+      - glpi_db_data:/var/lib/mysql
+    networks:
+      - stack_network
+    environment:
+      TZ: America/Sao_Paulo
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. GLPI (Gestão de Serviços)
+  glpi:
+    image: glpi/glpi:11.0.1
+    container_name: glpi_server
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "18080:80"
+    depends_on:
+      - glpi-db
+    environment:
+      - GLPI_DB_HOST=glpi-db
+      - GLPI_DB_NAME=${MYSQL_DATABASE}
+      - GLPI_DB_USER=${MYSQL_USER}
+      - GLPI_DB_PASSWORD=${MYSQL_PASSWORD}
+      - TZ=America/Sao_Paulo
+    volumes:
+      - glpi_files:/var/glpi
+    networks:
+      - stack_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 1.5G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  glpi_db_data:
+  glpi_files:
+
+networks:
+  stack_network:
+    external: true
