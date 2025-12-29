@@ -1,22 +1,40 @@
 param(
-  [string]$WebhookUrl = "http://localhost:5678/webhook/evolution-havoc",
-  [string]$Phone = "5511999999999",
-  [string]$Name = "Cliente Teste"
+  [string]$WebhookUrl = "http://localhost:5678/webhook/havoc-ti",
+  [string]$Phone = "5527999999999",
+  [string]$Message = "abrir_chamado",
+  [string]$Name = "Teste Script"
 )
 
 $headers = @{ "Content-Type" = "application/json" }
+
+# Payload simulando Evolution API v2
 $payload = @{
-  contact = @{
-    identifier = "$Phone@whatsapp.net"
-    name = $Name
-    id = 123
+  instance = "Havoc-TI"
+  data = @{
+    key = @{
+      remoteJid = "$Phone@s.whatsapp.net"
+      fromMe = $false
+      id = "TEST-" + (Get-Date -Format "yyyyMMddHHmmss")
+    }
+    pushName = $Name
+    messageType = "conversation"
+    message = @{
+      conversation = $Message
+    }
   }
-  content = "oi"
-  event = "message"
-} | ConvertTo-Json -Depth 6
+} | ConvertTo-Json -Depth 10
+
+Write-Host "Enviando payload para $WebhookUrl..."
+Write-Host $payload
 
 try {
-  Invoke-RestMethod -Uri $WebhookUrl -Method Post -Headers $headers -Body $payload | ConvertTo-Json -Depth 6 | Write-Output
+  $response = Invoke-RestMethod -Uri $WebhookUrl -Method Post -Headers $headers -Body $payload
+  Write-Host "Resposta do n8n:" -ForegroundColor Green
+  $response | ConvertTo-Json -Depth 5 | Write-Output
 } catch {
-  $_.ErrorDetails.Message | Write-Output
+  Write-Host "Erro ao chamar webhook:" -ForegroundColor Red
+  Write-Host $_.Exception.Message
+  if ($_.ErrorDetails) {
+    Write-Host $_.ErrorDetails.Message
+  }
 }
